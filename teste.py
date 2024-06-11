@@ -6,6 +6,16 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 import numpy as np
 
+# Mapeamento de materiais recicláveis e seus preços
+precos_materiais = {
+    'papel': 0.10,
+    'papelao': 0.15,
+    'vidro': 0.05,
+    'metal': 0.20,
+    'lixo': 0.00,
+    'plastico': 0.12
+}
+
 # Função para lidar com o clique no botão de cadastro
 def cadastrar():
     codigo_funcional = entry_codigo_funcional.get()
@@ -42,10 +52,13 @@ def abrir_tela_upload():
         )
         if arquivos:
             # Caminho para o modelo salvo
-            caminho_do_modelo = 'recyclai.h5'
+            caminho_do_modelo = 'meu_modelo.h5'
             
             # Carregar modelo TensorFlow
             model = tf.keras.models.load_model(caminho_do_modelo)
+            
+            total = 0
+            materiais_identificados = []
             
             for arquivo in arquivos:
                 # Carregar e processar a imagem
@@ -56,9 +69,16 @@ def abrir_tela_upload():
 
                 # Fazer previsão
                 prediction = model.predict(img_array)
-                print(f"Imagem: {arquivo} - Previsão: {prediction}")
+                material_index = np.argmax(prediction)
+                materiais = list(precos_materiais.keys())
+                material = materiais[material_index]
+                preco = precos_materiais[material]
+                
+                materiais_identificados.append(material)
+                total += preco
             
-            messagebox.showinfo("Upload", "Imagens carregadas e analisadas com sucesso!")
+            resultado = f"Materiais identificados: {', '.join(materiais_identificados)}\nTotal a receber: R${total:.2f}"
+            messagebox.showinfo("Resultado", resultado)
         else:
             messagebox.showwarning("Erro", "Nenhuma imagem selecionada.")
     
